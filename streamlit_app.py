@@ -1,321 +1,259 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 import PyPDF2
 
-# =====================================================
-# PAGE CONFIG
-# =====================================================
+# =========================
+# إعداد الصفحة
+# =========================
+
 st.set_page_config(
     page_title="Nexora Hub AI",
     page_icon="💬",
-    layout="centered"
+    layout="wide"
 )
 
-# =====================================================
-# TITLE
-# =====================================================
+# =========================
+# API KEY
+# =========================
+
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+# =========================
+# قراءة ملف الـ PDF
+# =========================
+
+pdf_text = ""
+
+try:
+    with open("Nx1.pdf", "rb") as file:
+        reader = PyPDF2.PdfReader(file)
+
+        for page in reader.pages:
+            text = page.extract_text()
+
+            if text:
+                pdf_text += text
+
+except:
+    pdf_text = "PDF file not found."
+
+# =========================
+# الصور والتحليلات
+# =========================
+
+indicators_data = """
+
+1) Net Profit - صافي الربح
+
+Image:
+Screenshot 2026-04-26 043008.png
+
+Explanation:
+يتضح من الشكل أن متوسط صافي الربح قبل التطبيق كان (8.75)
+بينما بعد التطبيق أصبح (32.17)
+مما يشير إلى وجود تحسن في الأداء المالي للبنك
+وهو ما يعكس تأثيرًا إيجابيًا للتقنية المستخدمة على جودة المعلومات المالية.
+
+---------------------------------------------------
+
+2) Assets - إجمالي الأصول
+
+Image:
+Screenshot 2026-04-26 045020.png
+
+Explanation:
+يتضح من الشكل ارتفاع إجمالي الأصول بعد تطبيق البلوك تشين
+مما يشير إلى نمو حجم البنك وتحسن كفاءة إدارة الموارد
+وهو ما يعكس تأثيرًا إيجابيًا للتقنية المستخدمة
+على ملائمة المعلومات المالية.
+
+---------------------------------------------------
+
+3) ROA - Return On Assets - العائد على الأصول
+
+Image:
+Screenshot 2026-04-26 050316.png
+
+Explanation:
+يتضح من الشكل وجود تحسن في متوسط العائد على الأصول
+بعد تطبيق التقنية مما يشير إلى زيادة كفاءة البنك
+في استخدام أصوله لتحقيق الأرباح
+وهو ما يعكس تأثيرًا إيجابيًا للتقنية المستخدمة
+على موثوقية المعلومات المالية.
+
+---------------------------------------------------
+
+4) ROE - Return On Equity - العائد على حقوق الملكية
+
+Image:
+Screenshot 2026-04-26 053321.png
+
+Explanation:
+يتضح من الشكل وجود تحسن في متوسط العائد
+على حقوق الملكية بعد التطبيق
+مما يشير إلى زيادة قدرة البنك على تحقيق عائد للمساهمين
+وهو ما يعكس تأثيرًا إيجابيًا لتقنية البلوك تشين
+على قابلية المقارنة والشفافية.
+
+"""
+
+# =========================
+# تصميم الواجهة
+# =========================
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #0E1117;
+    color: white;
+}
+
+.stChatInput input {
+    background-color: #262730;
+    color: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# العنوان
+# =========================
+
 st.title("💬 Nexora Hub AI")
 
 st.write(
     "AI chatbot for blockchain financial analysis and research project support."
 )
 
-# =====================================================
-# OPENAI API KEY
-# =====================================================
-openai_api_key = st.secrets["OPENAI_API_KEY"]
+# =========================
+# عرض الصور
+# =========================
 
-# =====================================================
-# OPENAI CLIENT
-# =====================================================
-client = OpenAI(api_key=openai_api_key)
+with st.expander("📊 Financial Indicators Charts"):
 
-# =====================================================
-# READ PDF FILE
-# =====================================================
-pdf_text = ""
+    st.subheader("Net Profit")
+    st.image("Screenshot 2026-04-26 043008.png")
 
-with open("Nx1.pdf", "rb") as file:
+    st.subheader("Assets")
+    st.image("Screenshot 2026-04-26 045020.png")
 
-    reader = PyPDF2.PdfReader(file)
+    st.subheader("ROA")
+    st.image("Screenshot 2026-04-26 050316.png")
 
-    for page in reader.pages:
+    st.subheader("ROE")
+    st.image("Screenshot 2026-04-26 053321.png")
 
-        text = page.extract_text()
+# =========================
+# الشات
+# =========================
 
-        if text:
-            pdf_text += text
-
-# =====================================================
-# SESSION STATE
-# =====================================================
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# =====================================================
-# DISPLAY OLD MESSAGES
-# =====================================================
+# عرض الرسائل القديمة
+
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
         st.markdown(message["content"])
 
-# =====================================================
-# CHAT INPUT
-# =====================================================
-if prompt := st.chat_input("Ask anything about the project..."):
+# استقبال سؤال جديد
 
-    # =================================================
-    # SAVE USER MESSAGE
-    # =================================================
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt}
-    )
+prompt = st.chat_input("Ask anything about the project...")
 
-    # =================================================
-    # SHOW USER MESSAGE
-    # =================================================
+if prompt:
+
+    st.session_state.messages.append({
+        "role": "user",
+        "content": prompt
+    })
+
     with st.chat_message("user"):
-
         st.markdown(prompt)
 
-    # =================================================
-    # NET PROFIT
-    # =================================================
-    if (
-        "net profit" in prompt.lower()
-        or "صافي الربح" in prompt
-    ):
+    # =========================
+    # Search داخل الـ PDF
+    # =========================
 
-        with st.chat_message("assistant"):
+    search_result = ""
 
-            st.image("Screenshot 2026-04-26 043008.png")
+    lower_prompt = prompt.lower()
 
-            st.markdown("""
-## تحليل صافي الربح (Net Profit)
+    keywords = lower_prompt.split()
 
-يتضح من الشكل أن متوسط صافي الربح قبل التطبيق كان (8.75)
+    for line in pdf_text.split("\n"):
 
-بينما بعد التطبيق أصبح (32.17)
+        line_lower = line.lower()
 
-مما يشير إلى وجود تحسن في الأداء المالي للبنك.
+        if any(word in line_lower for word in keywords):
+            search_result += line + "\n"
 
-وهو ما يعكس تأثيرًا إيجابيًا للتقنية المستخدمة
-على جودة المعلومات المالية.
-""")
+    if len(search_result) > 4000:
+        search_result = search_result[:4000]
 
-        st.stop()
+    # =========================
+    # Prompt النهائي
+    # =========================
 
-    # =================================================
-    # ASSETS
-    # =================================================
-    if (
-        "assets" in prompt.lower()
-        or "إجمالي الأصول" in prompt
-        or "الاصول" in prompt
-    ):
+    final_prompt = f"""
 
-        with st.chat_message("assistant"):
-
-            st.image("Screenshot 2026-04-26 045020.png")
-
-            st.markdown("""
-## تحليل إجمالي الأصول (Assets)
-
-يتضح من الشكل ارتفاع إجمالي الأصول
-بعد تطبيق البلوك تشين.
-
-مما يشير إلى نمو حجم البنك
-وتحسن كفاءة إدارة الموارد.
-
-وهو ما يعكس تأثيرًا إيجابيًا
-للتقنية المستخدمة
-على ملائمة المعلومات المالية.
-""")
-
-        st.stop()
-
-    # =================================================
-    # ROA
-    # =================================================
-    if (
-        "roa" in prompt.lower()
-        or "return on assets" in prompt.lower()
-        or "العائد على الأصول" in prompt
-    ):
-
-        with st.chat_message("assistant"):
-
-            st.image("Screenshot 2026-04-26 050316.png")
-
-            st.markdown("""
-## تحليل العائد على الأصول (ROA)
-
-يتضح من الشكل وجود تحسن
-في متوسط العائد على الأصول
-بعد تطبيق التقنية.
-
-مما يشير إلى زيادة كفاءة البنك
-في استخدام أصوله لتحقيق الأرباح.
-
-وهو ما يعكس تأثيرًا إيجابيًا
-للتقنية المستخدمة
-على موثوقية المعلومات المالية.
-""")
-
-        st.stop()
-
-    # =================================================
-    # ROE
-    # =================================================
-    if (
-        "roe" in prompt.lower()
-        or "return on equity" in prompt.lower()
-        or "العائد على حقوق الملكية" in prompt
-    ):
-
-        with st.chat_message("assistant"):
-
-            st.image("Screenshot 2026-04-26 053321.png")
-
-            st.markdown("""
-## تحليل العائد على حقوق الملكية (ROE)
-
-يتضح من الشكل وجود تحسن
-في متوسط العائد على حقوق الملكية
-بعد التطبيق.
-
-مما يشير إلى زيادة قدرة البنك
-على تحقيق عائد للمساهمين.
-
-وهو ما يعكس تأثيرًا إيجابيًا
-لتقنية البلوك تشين المستخدمة
-على قابلية المقارنة والشفافية.
-""")
-
-        st.stop()
-
-    # =================================================
-    # SEARCH INSIDE PDF
-    # =================================================
-    search_text = ""
-
-    if (
-        "مقدمة" in prompt
-        or "introduction" in prompt.lower()
-    ):
-
-        start = pdf_text.find("مقدمة")
-
-        if start != -1:
-            search_text = pdf_text[start:start+4000]
-
-    elif (
-        "مشكلة" in prompt
-        or "problem" in prompt.lower()
-    ):
-
-        start = pdf_text.find("مشكلة")
-
-        if start != -1:
-            search_text = pdf_text[start:start+4000]
-
-    elif (
-        "الفصل الثاني" in prompt
-        or "chapter 2" in prompt.lower()
-    ):
-
-        start = pdf_text.find("الفصل الثاني")
-
-        if start != -1:
-            search_text = pdf_text[start:start+3000]
-
-    elif (
-        "النتائج" in prompt
-        or "results" in prompt.lower()
-    ):
-
-        start = pdf_text.find("النتائج")
-
-        if start != -1:
-            search_text = pdf_text[start:start+3000]
-
-    elif (
-        "التوصيات" in prompt
-        or "recommendations" in prompt.lower()
-    ):
-
-        start = pdf_text.find("التوصيات")
-
-        if start != -1:
-            search_text = pdf_text[start:start+3000]
-
-    else:
-
-        search_text = pdf_text[:6000]
-
-    # =================================================
-    # SYSTEM PROMPT
-    # =================================================
-    system_prompt = f"""
 You are Nexora Hub AI.
 
-You are an AI assistant specialized in:
-- Blockchain
-- Banking systems
-- Financial analysis
-- Research projects
+You are an AI assistant specialized in explaining
+a blockchain financial analysis research project.
 
-Use ONLY the following extracted text
-from the uploaded PDF project
-to answer the user.
+Answer in Arabic or English depending on user language.
 
-Extracted Text:
+The user may ask in:
+- Arabic
+- English
+- Egyptian Arabic slang
 
-{search_text}
+Answer naturally and clearly.
 
-Answer clearly and professionally.
-You can answer in Arabic or English.
+PROJECT PDF CONTENT:
+{search_result}
+
+FINANCIAL INDICATORS DATA:
+{indicators_data}
+
+USER QUESTION:
+{prompt}
+
 """
 
-    # =================================================
-    # OPENAI RESPONSE
-    # =================================================
-    stream = client.chat.completions.create(
-        model="gpt-4.1-mini",
+    # =========================
+    # Gemini Response
+    # =========================
 
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt
-            },
+    response = model.generate_content(final_prompt)
 
-            *[
-                {
-                    "role": m["role"],
-                    "content": m["content"]
-                }
-                for m in st.session_state.messages
-            ]
-        ],
+    answer = response.text
 
-        stream=True,
-    )
+    # =========================
+    # عرض الصور حسب السؤال
+    # =========================
 
-    # =================================================
-    # SHOW RESPONSE
-    # =================================================
+    if "profit" in lower_prompt or "صافي الربح" in lower_prompt:
+        st.image("Screenshot 2026-04-26 043008.png")
+
+    if "assets" in lower_prompt or "الأصول" in lower_prompt:
+        st.image("Screenshot 2026-04-26 045020.png")
+
+    if "roa" in lower_prompt or "العائد على الأصول" in lower_prompt:
+        st.image("Screenshot 2026-04-26 050316.png")
+
+    if "roe" in lower_prompt or "حقوق الملكية" in lower_prompt:
+        st.image("Screenshot 2026-04-26 053321.png")
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": answer
+    })
+
     with st.chat_message("assistant"):
-
-        response = st.write_stream(stream)
-
-    # =================================================
-    # SAVE RESPONSE
-    # =================================================
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": response
-        }
-    )
+        st.markdown(answer)
