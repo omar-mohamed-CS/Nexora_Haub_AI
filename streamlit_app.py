@@ -33,12 +33,11 @@ else:
     # Create a chat input field to allow the user to enter a message. This will display
     # automatically at the bottom of the page.
     if prompt := st.chat_input("What is up?"):
-
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-if "net profit" in prompt.lower() or "صافي الربح" in prompt:
+        if "net profit" in prompt.lower() or "صافي الربح" in prompt:
 
         with st.chat_message("assistant"):
 
