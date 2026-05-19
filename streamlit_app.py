@@ -32,16 +32,19 @@ else:
 
     # Create a chat input field to allow the user to enter a message. This will display
     # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+    # Create a chat input field
+if prompt := st.chat_input("What is up?"):
 
-    # Store and display the current prompt.
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Store user message
+    st.session_state.messages.append(
+        {"role": "user", "content": prompt}
+    )
 
+    # Show user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
     # ===== Net Profit Analysis =====
-
     if "net profit" in prompt.lower() or "صافي الربح" in prompt:
 
         with st.chat_message("assistant"):
@@ -52,7 +55,26 @@ else:
             يوضح تحليل صافي الربح وجود تحسن ملحوظ
             نتيجة تحسين كفاءة المعاملات باستخدام تقنية البلوك تشين.
             """)
+
         st.stop()
+
+    # Generate OpenAI response
+    stream = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": m["role"], "content": m["content"]}
+            for m in st.session_state.messages
+        ],
+        stream=True,
+    )
+
+    # Display assistant response
+    with st.chat_message("assistant"):
+        response = st.write_stream(stream)
+
+    st.session_state.messages.append(
+        {"role": "assistant", "content": response}
+    )
 
     # Generate a response using the OpenAI API.
     stream = client.chat.completions.create(
