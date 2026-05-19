@@ -2,78 +2,87 @@ import streamlit as st
 from openai import OpenAI
 import PyPDF2
 
-# =========================
+# =====================================================
 # PAGE CONFIG
-# =========================
+# =====================================================
 st.set_page_config(
     page_title="Nexora Hub AI",
     page_icon="💬",
     layout="centered"
 )
 
-# =========================
+# =====================================================
 # TITLE
-# =========================
+# =====================================================
 st.title("💬 Nexora Hub AI")
 
 st.write(
     "AI chatbot for blockchain financial analysis and research project support."
 )
 
-# =========================
-# LOAD OPENAI API KEY
-# =========================
+# =====================================================
+# OPENAI API KEY
+# =====================================================
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 
-# =========================
+# =====================================================
 # OPENAI CLIENT
-# =========================
+# =====================================================
 client = OpenAI(api_key=openai_api_key)
 
-# =========================
+# =====================================================
 # READ PDF FILE
-# =========================
+# =====================================================
 pdf_text = ""
 
 with open("Nx1.pdf", "rb") as file:
+
     reader = PyPDF2.PdfReader(file)
 
     for page in reader.pages:
+
         text = page.extract_text()
 
         if text:
             pdf_text += text
 
-# =========================
+# =====================================================
 # SESSION STATE
-# =========================
+# =====================================================
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# =========================
+# =====================================================
 # DISPLAY OLD MESSAGES
-# =========================
+# =====================================================
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
+
         st.markdown(message["content"])
 
-# =========================
+# =====================================================
 # CHAT INPUT
-# =========================
+# =====================================================
 if prompt := st.chat_input("Ask anything about the project..."):
 
-    # Save User Message
+    # =================================================
+    # SAVE USER MESSAGE
+    # =================================================
     st.session_state.messages.append(
         {"role": "user", "content": prompt}
     )
 
-    # Show User Message
+    # =================================================
+    # SHOW USER MESSAGE
+    # =================================================
     with st.chat_message("user"):
+
         st.markdown(prompt)
 
-    # =====================================================
+    # =================================================
     # NET PROFIT
-    # =====================================================
+    # =================================================
     if (
         "net profit" in prompt.lower()
         or "صافي الربح" in prompt
@@ -87,6 +96,7 @@ if prompt := st.chat_input("Ask anything about the project..."):
 ## تحليل صافي الربح (Net Profit)
 
 يتضح من الشكل أن متوسط صافي الربح قبل التطبيق كان (8.75)
+
 بينما بعد التطبيق أصبح (32.17)
 
 مما يشير إلى وجود تحسن في الأداء المالي للبنك.
@@ -97,9 +107,9 @@ if prompt := st.chat_input("Ask anything about the project..."):
 
         st.stop()
 
-    # =====================================================
+    # =================================================
     # ASSETS
-    # =====================================================
+    # =================================================
     if (
         "assets" in prompt.lower()
         or "إجمالي الأصول" in prompt
@@ -114,7 +124,7 @@ if prompt := st.chat_input("Ask anything about the project..."):
 ## تحليل إجمالي الأصول (Assets)
 
 يتضح من الشكل ارتفاع إجمالي الأصول
-بعد تطبيق البلوك تشين
+بعد تطبيق البلوك تشين.
 
 مما يشير إلى نمو حجم البنك
 وتحسن كفاءة إدارة الموارد.
@@ -126,9 +136,9 @@ if prompt := st.chat_input("Ask anything about the project..."):
 
         st.stop()
 
-    # =====================================================
+    # =================================================
     # ROA
-    # =====================================================
+    # =================================================
     if (
         "roa" in prompt.lower()
         or "return on assets" in prompt.lower()
@@ -156,9 +166,9 @@ if prompt := st.chat_input("Ask anything about the project..."):
 
         st.stop()
 
-    # =====================================================
+    # =================================================
     # ROE
-    # =====================================================
+    # =================================================
     if (
         "roe" in prompt.lower()
         or "return on equity" in prompt.lower()
@@ -186,31 +196,92 @@ if prompt := st.chat_input("Ask anything about the project..."):
 
         st.stop()
 
-    # =====================================================
+    # =================================================
+    # SEARCH INSIDE PDF
+    # =================================================
+    search_text = ""
+
+    if (
+        "مقدمة" in prompt
+        or "introduction" in prompt.lower()
+    ):
+
+        start = pdf_text.find("مقدمة")
+
+        if start != -1:
+            search_text = pdf_text[start:start+4000]
+
+    elif (
+        "مشكلة" in prompt
+        or "problem" in prompt.lower()
+    ):
+
+        start = pdf_text.find("مشكلة")
+
+        if start != -1:
+            search_text = pdf_text[start:start+4000]
+
+    elif (
+        "الفصل الثاني" in prompt
+        or "chapter 2" in prompt.lower()
+    ):
+
+        start = pdf_text.find("الفصل الثاني")
+
+        if start != -1:
+            search_text = pdf_text[start:start+5000]
+
+    elif (
+        "النتائج" in prompt
+        or "results" in prompt.lower()
+    ):
+
+        start = pdf_text.find("النتائج")
+
+        if start != -1:
+            search_text = pdf_text[start:start+5000]
+
+    elif (
+        "التوصيات" in prompt
+        or "recommendations" in prompt.lower()
+    ):
+
+        start = pdf_text.find("التوصيات")
+
+        if start != -1:
+            search_text = pdf_text[start:start+5000]
+
+    else:
+
+        search_text = pdf_text[:6000]
+
+    # =================================================
     # SYSTEM PROMPT
-    # =====================================================
+    # =================================================
     system_prompt = f"""
 You are Nexora Hub AI.
 
-You are a professional AI assistant specialized in:
+You are an AI assistant specialized in:
 - Blockchain
 - Banking systems
 - Financial analysis
 - Research projects
-- Financial indicators
 
-You must answer ONLY using the uploaded PDF project content.
+Use ONLY the following extracted text
+from the uploaded PDF project
+to answer the user.
 
-Here is the project content:
+Extracted Text:
 
-{pdf_text}
+{search_text}
 
 Answer clearly and professionally.
+You can answer in Arabic or English.
 """
 
-    # =====================================================
+    # =================================================
     # OPENAI RESPONSE
-    # =====================================================
+    # =================================================
     stream = client.chat.completions.create(
         model="gpt-3.5-turbo",
 
@@ -232,15 +303,19 @@ Answer clearly and professionally.
         stream=True,
     )
 
-    # =========================
+    # =================================================
     # SHOW RESPONSE
-    # =========================
+    # =================================================
     with st.chat_message("assistant"):
+
         response = st.write_stream(stream)
 
-    # =========================
+    # =================================================
     # SAVE RESPONSE
-    # =========================
+    # =================================================
     st.session_state.messages.append(
-        {"role": "assistant", "content": response}
+        {
+            "role": "assistant",
+            "content": response
+        }
     )
