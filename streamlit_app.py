@@ -1,8 +1,9 @@
 import streamlit as st
 from openai import OpenAI
+import PyPDF2
 
 # =========================
-# Page Title
+# PAGE CONFIG
 # =========================
 st.set_page_config(
     page_title="Nexora Hub AI",
@@ -11,7 +12,7 @@ st.set_page_config(
 )
 
 # =========================
-# Main Title
+# TITLE
 # =========================
 st.title("💬 Nexora Hub AI")
 
@@ -20,126 +21,226 @@ st.write(
 )
 
 # =========================
-# OpenAI Key from Secrets
+# LOAD OPENAI API KEY
 # =========================
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 
-# Create OpenAI client
+# =========================
+# OPENAI CLIENT
+# =========================
 client = OpenAI(api_key=openai_api_key)
 
 # =========================
-# Session State
+# READ PDF FILE
+# =========================
+pdf_text = ""
+
+with open("Nx1.pdf", "rb") as file:
+    reader = PyPDF2.PdfReader(file)
+
+    for page in reader.pages:
+        text = page.extract_text()
+
+        if text:
+            pdf_text += text
+
+# =========================
+# SESSION STATE
 # =========================
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # =========================
-# Display old messages
+# DISPLAY OLD MESSAGES
 # =========================
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # =========================
-# Chat Input
+# CHAT INPUT
 # =========================
-if prompt := st.chat_input("Ask anything..."):
+if prompt := st.chat_input("Ask anything about the project..."):
 
-    # Save user message
+    # Save User Message
     st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": prompt
-        }
+        {"role": "user", "content": prompt}
     )
 
-    # Show user message
+    # Show User Message
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # ====================================
-    # Net Profit Analysis
-    # ====================================
-    if "net profit" in prompt.lower() or "صافي الربح" in prompt:
+    # =====================================================
+    # NET PROFIT
+    # =====================================================
+    if (
+        "net profit" in prompt.lower()
+        or "صافي الربح" in prompt
+    ):
 
         with st.chat_message("assistant"):
 
             st.image("Screenshot 2026-04-26 043008.png")
 
-            st.write("""
-يوضح تحليل صافي الربح وجود تحسن ملحوظ نتيجة تحسين كفاءة المعاملات باستخدام تقنية البلوك تشين.
+            st.markdown("""
+## تحليل صافي الربح (Net Profit)
+
+يتضح من الشكل أن متوسط صافي الربح قبل التطبيق كان (8.75)
+بينما بعد التطبيق أصبح (32.17)
+
+مما يشير إلى وجود تحسن في الأداء المالي للبنك.
+
+وهو ما يعكس تأثيرًا إيجابيًا للتقنية المستخدمة
+على جودة المعلومات المالية.
 """)
 
         st.stop()
 
-    # ====================================
-    # Assets Analysis
-    # ====================================
-    if "assets" in prompt.lower() or "الأصول" in prompt or "إجمالي الأصول" in prompt:
+    # =====================================================
+    # ASSETS
+    # =====================================================
+    if (
+        "assets" in prompt.lower()
+        or "إجمالي الأصول" in prompt
+        or "الاصول" in prompt
+    ):
 
         with st.chat_message("assistant"):
 
             st.image("Screenshot 2026-04-26 045020.png")
 
-            st.write("""
-يوضح تحليل إجمالي الأصول وجود نمو تدريجي في قيمة الأصول نتيجة التوسع في استخدام التكنولوجيا المالية.
+            st.markdown("""
+## تحليل إجمالي الأصول (Assets)
+
+يتضح من الشكل ارتفاع إجمالي الأصول
+بعد تطبيق البلوك تشين
+
+مما يشير إلى نمو حجم البنك
+وتحسن كفاءة إدارة الموارد.
+
+وهو ما يعكس تأثيرًا إيجابيًا
+للتقنية المستخدمة
+على ملائمة المعلومات المالية.
 """)
 
         st.stop()
 
-    # ====================================
-    # ROA Analysis
-    # ====================================
-    if "roa" in prompt.lower() or "العائد على الأصول" in prompt:
+    # =====================================================
+    # ROA
+    # =====================================================
+    if (
+        "roa" in prompt.lower()
+        or "return on assets" in prompt.lower()
+        or "العائد على الأصول" in prompt
+    ):
 
         with st.chat_message("assistant"):
 
             st.image("Screenshot 2026-04-26 050316.png")
 
-            st.write("""
-يوضح تحليل العائد على الأصول تحسن كفاءة استخدام الأصول في تحقيق الأرباح.
+            st.markdown("""
+## تحليل العائد على الأصول (ROA)
+
+يتضح من الشكل وجود تحسن
+في متوسط العائد على الأصول
+بعد تطبيق التقنية.
+
+مما يشير إلى زيادة كفاءة البنك
+في استخدام أصوله لتحقيق الأرباح.
+
+وهو ما يعكس تأثيرًا إيجابيًا
+للتقنية المستخدمة
+على موثوقية المعلومات المالية.
 """)
 
         st.stop()
 
-    # ====================================
-    # ROE Analysis
-    # ====================================
-    if "roe" in prompt.lower() or "العائد على حقوق الملكية" in prompt:
+    # =====================================================
+    # ROE
+    # =====================================================
+    if (
+        "roe" in prompt.lower()
+        or "return on equity" in prompt.lower()
+        or "العائد على حقوق الملكية" in prompt
+    ):
 
         with st.chat_message("assistant"):
 
             st.image("Screenshot 2026-04-26 053321.png")
 
-            st.write("""
-يوضح تحليل العائد على حقوق الملكية تحسن العوائد للمساهمين نتيجة تطوير الأداء المالي.
+            st.markdown("""
+## تحليل العائد على حقوق الملكية (ROE)
+
+يتضح من الشكل وجود تحسن
+في متوسط العائد على حقوق الملكية
+بعد التطبيق.
+
+مما يشير إلى زيادة قدرة البنك
+على تحقيق عائد للمساهمين.
+
+وهو ما يعكس تأثيرًا إيجابيًا
+لتقنية البلوك تشين المستخدمة
+على قابلية المقارنة والشفافية.
 """)
 
         st.stop()
 
-    # ====================================
-    # OpenAI Normal Response
-    # ====================================
+    # =====================================================
+    # SYSTEM PROMPT
+    # =====================================================
+    system_prompt = f"""
+You are Nexora Hub AI.
+
+You are a professional AI assistant specialized in:
+- Blockchain
+- Banking systems
+- Financial analysis
+- Research projects
+- Financial indicators
+
+You must answer ONLY using the uploaded PDF project content.
+
+Here is the project content:
+
+{pdf_text}
+
+Answer clearly and professionally.
+"""
+
+    # =====================================================
+    # OPENAI RESPONSE
+    # =====================================================
     stream = client.chat.completions.create(
         model="gpt-3.5-turbo",
+
         messages=[
             {
-                "role": m["role"],
-                "content": m["content"]
-            }
-            for m in st.session_state.messages
+                "role": "system",
+                "content": system_prompt
+            },
+
+            *[
+                {
+                    "role": m["role"],
+                    "content": m["content"]
+                }
+                for m in st.session_state.messages
+            ]
         ],
+
         stream=True,
     )
 
-    # Show AI response
+    # =========================
+    # SHOW RESPONSE
+    # =========================
     with st.chat_message("assistant"):
         response = st.write_stream(stream)
 
-    # Save AI response
+    # =========================
+    # SAVE RESPONSE
+    # =========================
     st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": response
-        }
+        {"role": "assistant", "content": response}
     )
