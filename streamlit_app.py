@@ -38,7 +38,18 @@ else:
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
+if "net profit" in prompt.lower() or "صافي الربح" in prompt:
 
+        with st.chat_message("assistant"):
+
+            st.image("Screenshot 2026-04-26 043008.png")
+
+            st.write("""
+            يوضح تحليل صافي الربح وجود تحسن ملحوظ
+            نتيجة تحسين كفاءة المعاملات باستخدام تقنية البلوك تشين.
+            """)
+
+        st.stop()
         # Generate a response using the OpenAI API.
         stream = client.chat.completions.create(
             model="gpt-3.5-turbo",
