@@ -229,7 +229,7 @@ if prompt := st.chat_input("Ask anything about the project..."):
         start = pdf_text.find("الفصل الثاني")
 
         if start != -1:
-            search_text = pdf_text[start:start+5000]
+            search_text = pdf_text[start:start+3000]
 
     elif (
         "النتائج" in prompt
@@ -239,7 +239,7 @@ if prompt := st.chat_input("Ask anything about the project..."):
         start = pdf_text.find("النتائج")
 
         if start != -1:
-            search_text = pdf_text[start:start+5000]
+            search_text = pdf_text[start:start+3000]
 
     elif (
         "التوصيات" in prompt
@@ -249,7 +249,7 @@ if prompt := st.chat_input("Ask anything about the project..."):
         start = pdf_text.find("التوصيات")
 
         if start != -1:
-            search_text = pdf_text[start:start+5000]
+            search_text = pdf_text[start:start+3000]
 
     else:
 
@@ -283,7 +283,7 @@ You can answer in Arabic or English.
     # OPENAI RESPONSE
     # =================================================
     stream = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
 
         messages=[
             {
